@@ -1,0 +1,47 @@
+{% set name = "firtool" %}
+{% set version = "sifive.1.16.0" %}
+{% set tag = "sifive/1/16/0" %}
+{% set build_number = environ.get('GIT_DESCRIBE_NUMBER', '0') %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  git_url: https://github.com/llvm/circt.git
+  git_rev: {{ tag }}
+
+build:
+  number: {{ build_number }}
+  string: {{ [build_number, ('h' + PKG_HASH), environ.get('GIT_DESCRIBE_HASH', '')]|join('_') }}
+  skip: True # [not linux64]
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+    - cmake
+    - ninja
+    - python>=3
+    - zlib
+    - make
+    - bzip2
+    - gzip
+    - sed
+    - sh
+    - tar
+    - unzip
+    - zip
+    # needed for verilator tests
+    - make
+    - autoconf
+    - {{ compiler('cxx') }}
+    - flex
+    - bison
+
+about:
+  home: https://github.com/ucb-bar/firtool-feedstock
+  summary: Firtool conda package
+
+extra:
+  recipe-maintainers:
+    - abejgonzalez
