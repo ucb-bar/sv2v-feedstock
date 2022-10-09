@@ -20,10 +20,8 @@ cmake -G Ninja .. \
     -DLLVM_DIR=$PWD/../llvm/build/lib/cmake/llvm \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=$PREFIX
-
-# TODO: unknown if needed
-#    -DLLVM_ENABLE_ASSERTIONS=ON \
 ninja -j${CPU_COUNT}
 ninja -j${CPU_COUNT} check-circt
 ninja -j${CPU_COUNT} check-circt-integration # Run the integration tests.
+ninja install
 popd

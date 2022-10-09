@@ -31,12 +31,19 @@ requirements:
     - tar
     - unzip
     - zip
+    - psutil
     # needed for verilator tests
     - make
     - autoconf
     - {{ compiler('cxx') }}
     - flex
     - bison
+  host:
+    - ncurses
+
+test:
+  commands:
+    - firtool --version
 
 about:
   home: https://github.com/ucb-bar/firtool-feedstock
