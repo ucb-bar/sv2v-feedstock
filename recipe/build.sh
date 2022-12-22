@@ -9,7 +9,7 @@ cmake -G Ninja ../llvm \
     -DLLVM_ENABLE_PROJECTS="mlir" \
     -DLLVM_TARGETS_TO_BUILD="host" \
     -DLLVM_ENABLE_ASSERTIONS=ON \
-    -DCMAKE_BUILD_TYPE=RELEASE \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 ninja -j${CPU_COUNT}
 ninja -j${CPU_COUNT} check-mlir
