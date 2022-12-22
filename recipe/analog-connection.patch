@@ -1,0 +1,81 @@
+diff --git a/lib/Conversion/FIRRTLToHW/LowerToHW.cpp b/lib/Conversion/FIRRTLToHW/LowerToHW.cpp
+index ecb02afb8..3becdba9f 100644
+--- a/lib/Conversion/FIRRTLToHW/LowerToHW.cpp
++++ b/lib/Conversion/FIRRTLToHW/LowerToHW.cpp
+@@ -4096,6 +4096,24 @@ LogicalResult FIRRTLLowering::visitStmt(AttachOp op) {
+   if (getSingleNonInstanceOperand(op))
+     return success();
+ 
++  // If all operands of the attach are internal to this module (none of them
++  // are ports), then they can all be replaced with a single wire, and we can
++  // delete the attach op.
++  bool isAttachInternalOnly =
++      llvm::none_of(inoutValues, [](auto v) { return isa<BlockArgument>(v); });
++
++  if (isAttachInternalOnly) {
++    auto v0 = inoutValues.front();
++    for (auto v : inoutValues) {
++      if (v == v0)
++        continue;
++      v.replaceAllUsesWith(v0);
++    }
++    return success();
++  }
++
++  // If the attach operands contain a port, then we can't do anything to
++  // simplify the attach operation.
+   addToIfDefBlock(
+       "SYNTHESIS",
+       // If we're doing synthesis, we emit an all-pairs assign complex.
+diff --git a/test/Conversion/FIRRTLToHW/lower-to-hw.mlir b/test/Conversion/FIRRTLToHW/lower-to-hw.mlir
+index 3e6f73dc6..daa80bfe9 100644
+--- a/test/Conversion/FIRRTLToHW/lower-to-hw.mlir
++++ b/test/Conversion/FIRRTLToHW/lower-to-hw.mlir
+@@ -1787,4 +1787,47 @@ firrtl.circuit "Simple"   attributes {annotations = [{class =
+     // CHECK: sv.system "value$plusargs"(%[[foo]], %[[tmp]])
+     
+   }
++
++  // An internal-only analog connection between two instances should be implemented with a wire
++  firrtl.extmodule @AnalogInModA(in a: !firrtl.analog<8>)
++  firrtl.extmodule @AnalogInModB(in a: !firrtl.analog<8>)
++  firrtl.extmodule @AnalogOutModA(out a: !firrtl.analog<8>)
++  firrtl.module @AnalogMergeTwo() {
++    %result_iIn = firrtl.instance iIn @AnalogInModA(in a: !firrtl.analog<8>)
++    %result_iOut = firrtl.instance iOut @AnalogOutModA(out a: !firrtl.analog<8>)
++    firrtl.attach %result_iIn, %result_iOut : !firrtl.analog<8>, !firrtl.analog<8>
++  }
++  // CHECK-LABEL: hw.module @AnalogMergeTwo() {
++  // CHECK:         %.a.wire = sv.wire : !hw.inout<i8>
++  // CHECK:         hw.instance "iIn" @AnalogInModA(a: %.a.wire: !hw.inout<i8>) -> ()
++  // CHECK:         hw.instance "iOut" @AnalogOutModA(a: %.a.wire: !hw.inout<i8>) -> ()
++  // CHECK-NEXT:    hw.output
++  // CHECK-NEXT:  }
++
++  // An internal-only analog connection between three instances should be implemented with a wire
++  firrtl.module @AnalogMergeThree() {
++    %result_iInA = firrtl.instance iInA @AnalogInModA(in a: !firrtl.analog<8>)
++    %result_iInB = firrtl.instance iInB @AnalogInModB(in a: !firrtl.analog<8>)
++    %result_iOut = firrtl.instance iOut @AnalogOutModA(out a: !firrtl.analog<8>)
++    firrtl.attach %result_iInA, %result_iInB, %result_iOut : !firrtl.analog<8>, !firrtl.analog<8>, !firrtl.analog<8>
++  }
++  // CHECK-LABEL: hw.module @AnalogMergeThree() {
++  // CHECK:         %.a.wire = sv.wire : !hw.inout<i8>
++  // CHECK:         hw.instance "iInA" @AnalogInModA(a: %.a.wire: !hw.inout<i8>) -> ()
++  // CHECK:         hw.instance "iInB" @AnalogInModB(a: %.a.wire: !hw.inout<i8>) -> ()
++  // CHECK:         hw.instance "iOut" @AnalogOutModA(a: %.a.wire: !hw.inout<i8>) -> ()
++  // CHECK-NEXT:    hw.output
++  // CHECK-NEXT:  }
++
++  // An analog connection between two instances and a module port should be implemented with a wire
++  firrtl.module @AnalogMergeTwoWithPort(out %a: !firrtl.analog<8>) {
++    %result_iIn = firrtl.instance iIn @AnalogInModA(in a: !firrtl.analog<8>)
++    %result_iOut = firrtl.instance iOut @AnalogOutModA(out a: !firrtl.analog<8>)
++    firrtl.attach %a, %result_iIn, %result_iOut : !firrtl.analog<8>, !firrtl.analog<8>, !firrtl.analog<8>
++  }
++  // CHECK-LABEL: hw.module @AnalogMergeTwoWithPort(%a: !hw.inout<i8>) {
++  // CHECK-NEXT:    hw.instance "iIn" @AnalogInModA(a: %a: !hw.inout<i8>) -> ()
++  // CHECK-NEXT:    hw.instance "iOut" @AnalogOutModA(a: %a: !hw.inout<i8>) -> ()
++  // CHECK-NEXT:    hw.output
++  // CHECK-NEXT:  }
+ }
