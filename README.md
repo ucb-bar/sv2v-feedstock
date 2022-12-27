@@ -99,4 +99,5 @@ Feedstock Maintainers
 =====================
 
 * [@abejgonzalez](https://github.com/abejgonzalez/)
+* [@joey0320](https://github.com/joey0320/)
 
