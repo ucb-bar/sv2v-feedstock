@@ -5,7 +5,7 @@ Home: https://github.com/ucb-bar/firtool-feedstock
 
 Package license: 
 
-Feedstock license: [BSD-3-Clause](https://github.com/conda-forge/circt-feedstock/blob/master/LICENSE.txt)
+Feedstock license: [BSD-3-Clause](https://github.com/conda-forge/firtool-feedstock/blob/master/LICENSE.txt)
 
 Summary: Firtool conda package
 
@@ -99,5 +99,4 @@ Feedstock Maintainers
 =====================
 
 * [@abejgonzalez](https://github.com/abejgonzalez/)
-* [@joey0320](https://github.com/joey0320/)
 
