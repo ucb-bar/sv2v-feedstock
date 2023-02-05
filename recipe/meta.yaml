@@ -1,6 +1,6 @@
 {% set name = "firtool" %}
-{% set version = "1.25.0" %}
-{% set tag = "sifive/1/25/0" %}
+{% set version = "1.29.0" %}
+{% set tag = "firtool-1.29.0" %}
 {% set build_number = environ.get('GIT_DESCRIBE_NUMBER', '0') %}
 
 package:
@@ -10,8 +10,6 @@ package:
 source:
   git_url: https://github.com/llvm/circt.git
   git_rev: {{ tag }}
-  patches:
-    - analog-connection.patch
 
 build:
   number: {{ build_number }}
@@ -54,3 +52,4 @@ about:
 extra:
   recipe-maintainers:
     - abejgonzalez
+    - joey0320
