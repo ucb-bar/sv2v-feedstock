@@ -1,6 +1,6 @@
-{% set name = "firtool" %}
-{% set version = "1.29.0" %}
-{% set tag = "firtool-1.29.0" %}
+{% set name = "sv2v" %}
+{% set version = "v0.0.10" %}
+{% set tag = "v0.0.10" %}
 {% set build_number = environ.get('GIT_DESCRIBE_NUMBER', '0') %}
 
 package:
@@ -8,7 +8,7 @@ package:
   version: {{ version }}
 
 source:
-  git_url: https://github.com/llvm/circt.git
+  git_url: https://github.com/zachjs/sv2v.git
   git_rev: {{ tag }}
 
 build:
@@ -18,38 +18,18 @@ build:
 
 requirements:
   build:
-    - {{ compiler('cxx') }}
-    - cmake
-    - ninja
+    - stack
+    - make
     - python>=3
-    - zlib
-    - make
-    - bzip2
-    - gzip
-    - sed
-    - sh
-    - tar
-    - unzip
-    - zip
-    - psutil
-    # needed for verilator tests
-    - make
-    - autoconf
-    - {{ compiler('cxx') }}
-    - flex
-    - bison
-  host:
-    - ncurses
 
 test:
   commands:
-    - firtool --version
+    - sv2v --version
 
 about:
-  home: https://github.com/ucb-bar/firtool-feedstock
-  summary: Firtool conda package
+  home: https://github.com/ucb-bar/sv2v-feedstock
+  summary: sv2v conda package
 
 extra:
   recipe-maintainers:
     - abejgonzalez
-    - joey0320
